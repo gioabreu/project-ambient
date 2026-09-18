@@ -56,7 +56,9 @@ jobs:
           npm ci --ignore-scripts --dry-run --prefix apps/site
           npm ci --ignore-scripts --dry-run --prefix script/mcpb-tooling
       - name: Check deterministic SBOM generator syntax
-        run: node --check script/generate_release_sbom.mjs
+        run: |
+          node --check script/generate_release_sbom.mjs
+          node --test script/generate_release_sbom.test.mjs
       - name: Validate platform capability and release-binding contracts
         run: node script/validate_capabilities.mjs
       - name: Validate media-rights and commercial-boundary contracts
