@@ -28,6 +28,14 @@ if (!version || !output || lockfiles.length === 0) {
   process.exit(2);
 }
 
+// purl names must be percent-encoded without double-encoding the npm scope marker.
+// Encoding the whole name and then repairing "%40" with String.replace() only fixes
+// the first occurrence and is flagged as incomplete sanitization (CodeQL
+// js/incomplete-sanitization) — encode the parts instead.
+function purlNpmName(name) {
+  return name.startsWith("@") ? `@${encodeURIComponent(name.slice(1))}` : encodeURIComponent(name);
+}
+
 const components = [];
 for (const lockfile of lockfiles.sort()) {
   const lock = JSON.parse(await readFile(lockfile, "utf8"));
@@ -47,7 +55,7 @@ for (const lockfile of lockfiles.sort()) {
       type: "library",
       name,
       version: String(entry.version),
-      purl: `pkg:npm/${encodeURIComponent(name).replace("%40", "@")}@${encodeURIComponent(String(entry.version))}`,
+      purl: `pkg:npm/${purlNpmName(name)}@${encodeURIComponent(String(entry.version))}`,
       properties,
     });
   }
